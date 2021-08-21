@@ -10,6 +10,12 @@ class InitialScreen extends StatefulWidget {
 class _InitialScreenState extends State<InitialScreen> {
   DateTime _date = DateTime.now();
   TextEditingController _dateController = TextEditingController();
+  TextEditingController _nickNameController = TextEditingController();
+  TextEditingController _ageController = TextEditingController();
+
+  GlobalKey<FormState> _nickNameFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _ageFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _pDateFormKey = GlobalKey<FormState>();
 
   Future<void> _selectDate(BuildContext context)async{
     DateTime _datePicker = await showDatePicker(
@@ -64,72 +70,108 @@ class _InitialScreenState extends State<InitialScreen> {
 
                   ),
                 ),
+                
+                
+                
                 SizedBox(height: 20,),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50),
-                  child: TextField(
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white,fontSize: 20),
-                    decoration: InputDecoration(
-                      hintStyle: TextStyle(color: Colors.white,fontSize: 20),
-                      filled: true,
-                      fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
-                      hintText: "Nick Name",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                Form(
+                  key: _nickNameFormKey,
+                  autovalidate: true,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: TextFormField(
+                      controller: _nickNameController,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white,fontSize: 20),
+                      decoration: InputDecoration(
+                        hintStyle: TextStyle(color: Colors.white,fontSize: 20),
+                        filled: true,
+                        fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
+                        hintText: "Nick Name",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+
+                        ),
 
                       ),
-
+                      validator: (value){
+                        if (value.isEmpty) {
+                          return "* Required";
+                        } else
+                          return null;
+                      },
                     ),
                   ),
                 ),
                 SizedBox(height: 20,),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50),
-                  child: TextField(
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    style: TextStyle(color: Colors.white,fontSize: 20),
-                    decoration: InputDecoration(
-                      hintStyle: TextStyle(color: Colors.white,fontSize: 20),
-                      filled: true,
-                      fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
-                      hintText: "Age",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                Form(
+                  key: _ageFormKey,
+                  autovalidate: true,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: TextFormField(
+                      controller: _ageController,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      style: TextStyle(color: Colors.white,fontSize: 20),
+                      decoration: InputDecoration(
+                        hintStyle: TextStyle(color: Colors.white,fontSize: 20),
+                        filled: true,
+                        fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
+                        hintText: "Age",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+
+                        ),
 
                       ),
-
+                      validator: (value){
+                        if (value.isEmpty) {
+                          return "* Required";
+                        } else
+                          return null;
+                      },
                     ),
                   ),
                 ),
                 SizedBox(height: 20,),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50),
-                  child: TextField(
-                    style: TextStyle(color: Colors.white,fontSize: 20),
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      filled: true,
-                      hintStyle: TextStyle(color: Colors.white,fontSize: 20),
-                      fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
-                      hintText: "Pregnancy Date",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+                Form(
+                  key: _pDateFormKey,
+                  autovalidate: true,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: TextFormField(
+                      style: TextStyle(color: Colors.white,fontSize: 20),
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.white,fontSize: 20),
+                        fillColor: Color(0xFFF7CAD0).withOpacity(0.4),
+                        hintText: "Pregnancy Date",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+
+                        ),
 
                       ),
-
+                      readOnly: true,
+                      controller: _dateController,
+                      onTap: (){
+                        setState(() {
+                          _selectDate(context);
+                        });
+                      },
+                      validator: (value){
+                        if (value.isEmpty) {
+                          return "* Required";
+                        } else
+                          return null;
+                      },
                     ),
-                    readOnly: true,
-                    controller: _dateController,
-                    onTap: (){
-                      setState(() {
-                        _selectDate(context);
-                      });
-                    },
+
                   ),
                 ),
                 SizedBox(height: 40,),
@@ -148,10 +190,11 @@ class _InitialScreenState extends State<InitialScreen> {
                     //todo validation data
                     //todo storing data in shared preferences
                     //todo moving to main
-                    setState(() {
-                      _selectDate(context);
+
+                    if(_isValidate()){
                       print("ok");
-                    });
+                    }
+
                   },
                 )
 
@@ -162,4 +205,17 @@ class _InitialScreenState extends State<InitialScreen> {
       ),
     );
   }
+
+  bool _isValidate(){
+    if(!_nickNameFormKey.currentState.validate()){
+      return false;
+    }else if(!_ageFormKey.currentState.validate()){
+      return false;
+    }else if(!_pDateFormKey.currentState.validate()){
+      return false;
+    }else{
+      return true;
+    }
+  }
+
 }
