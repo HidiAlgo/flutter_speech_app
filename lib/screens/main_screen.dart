@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_app/Const/Constants.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -176,9 +177,16 @@ class _MainScreenState extends State<MainScreen> {
     _logEvent(
         'Received error status: $error, listening: ${speech.isListening}');
     setState(() {
-      lastError = '${error.errorMsg} - ${error.permanent}';
+      if(error.permanent){
+        lastError = error.errorMsg;
+        isListening = false;
+        Constants.showToast("Speech time out");
+      }
+      lastError = '${error.errorMsg}';
     });
+
   }
+
 
   void _logEvent(String eventDescription) {
     if (_logEvents) {
@@ -216,6 +224,10 @@ class _MainScreenState extends State<MainScreen> {
       lastWords = '${result.recognizedWords}';
       isListening = !result.finalResult;//button glowing is ended when the stop speeching.
 
+      if(result.finalResult){
+        postAPIRequest();
+      }
+
     });
   }
 
@@ -228,5 +240,10 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+
+  void postAPIRequest(){
+    // todo CALL VOICE FLOW API
+    print(lastWords);
+  }
 }
 
