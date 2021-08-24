@@ -1,5 +1,6 @@
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
+
 class MainScreen extends StatefulWidget {
 
 
@@ -8,8 +9,18 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  String _mainText = "TAP START TO SPEECH";
-  bool _mIsListening = true;
+  String _speechText = "TAP START TO SPEECH";
+  bool isListening = false;
+  String text = "Hello Emely \n How can i help You?";
+
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -48,76 +59,56 @@ class _MainScreenState extends State<MainScreen> {
 
                       ],
                     ),
-                    Text(_mainText, style: TextStyle(
+                    Text( !isListening ? _speechText : "Speeching!", style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold
                       ),
                     ),
                     SizedBox(height: 70,),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: Color(0xFFF9BEC7).withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(100)
-                          ),
+
+                    AvatarGlow(
+                      animate: isListening,
+                      glowColor: Color(0xFFF7CAD0),
+                      endRadius: 150.0,
+                      duration: Duration(milliseconds: 1000),
+                      repeatPauseDuration: Duration(milliseconds: 800),
+                      repeat: true,
+                      child: Container(
+                        width: 150.0,
+                        height: 150.0,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Color(0xFFF7CAD0),
                         ),
-                        /*InkWell(
-                          onTap: (){
-                            //todo start speeching
+                        child: new RawMaterialButton(
+                          shape: new CircleBorder(),
+                          elevation: 0.0,
+                          child: Icon(isListening ? Icons.mic : Icons.mic_none,color: Color(0xFFFF5C8A),size: 60,),
+                          onPressed: () {
+                           // onListen();
+                            //toggleRecording();
+                            if(!isListening){
+                              setState(() {
+                                isListening = true;
+                              });
+
+                            }else{
+                              setState(() {
+                                isListening = false;
+                              });
+                            }
                           },
-                          child: Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                                color: Color(0xFFF9BEC7),
-                                borderRadius: BorderRadius.circular(100)
-                            ),
-                            child: Center(
-                                child: Text("START",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold
-                                  ),
-                                ),
-                            ),
-                          ),
-                        )*/
-                        AvatarGlow(
-                          animate: _mIsListening,
-                          glowColor: Colors.blue,
-                          endRadius: 75.0,
-                          duration: Duration(milliseconds: 2000),
-                          repeatPauseDuration: Duration(milliseconds: 100),
-                          repeat: true,
-                          child: Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                                color: Color(0xFFF9BEC7),
-                                borderRadius: BorderRadius.circular(100)
-                            ),
-                            child: Center(
-                              child: Text("START",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            ),
-                          ),
                         ),
-                      ],
+                      ),
+
+
+
+
                     ),
 
                     SizedBox(height: 100,),
-                    Text("Hello Emely \n How can i help You?",
+                    Text(text,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                       color: Colors.white,
@@ -135,31 +126,9 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
+
+
+
 }
-/*
-AvatarGlow(
-animate: _mIsListening,
-glowColor: Colors.blue,
-endRadius: 75.0,
-duration: Duration(milliseconds: 2000),
-repeatPauseDuration: Duration(milliseconds: 100),
-repeat: true,
-child: Container(
-width: 150,
-height: 150,
-decoration: BoxDecoration(
-color: Color(0xFFF9BEC7),
-borderRadius: BorderRadius.circular(100)
-),
-child: Center(
-child: Text("START",
-style: TextStyle(
-color: Colors.white,
-fontSize: 24,
-fontWeight: FontWeight.bold
-),
-),
-),
-),
-),
-*/
+

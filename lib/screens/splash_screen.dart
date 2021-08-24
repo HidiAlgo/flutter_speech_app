@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_app/Const/Constants.dart';
 import 'package:speech_app/screens/initialScreen.dart';
+import 'package:speech_app/screens/main_screen.dart';
 class SplashScreen extends StatefulWidget {
 
   @override
@@ -9,32 +12,46 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
+  Future<SharedPreferences> _mSF = SharedPreferences.getInstance();
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer(
-        Duration(seconds: 2),
-            () => Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => InitialScreen())));
+    getDataFromSP();
   }
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          stops: [0.1,0.5,0.9],
-          colors: [Color(0xFFF7CAD0),Color(0xFFFF5C8A),Color(0xFFFBB1BD)]
-        )
-      ),
+          image: DecorationImage(
+              image: AssetImage("assets/splash_background.png"), fit: BoxFit.cover)),
       child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Center(
-            child: Image.asset("assets/splash_logo1.png",width: 300,),
-          ),
+        backgroundColor: Colors.transparent,
+
       ),
     );
+
+  }
+
+  void getDataFromSP() async {
+    final SharedPreferences prefs = await _mSF;
+
+
+
+    if(prefs.containsKey(Constants.NICK_NAME)){
+      Timer(
+          Duration(seconds: 2),
+              () => Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => MainScreen())));
+    }else{
+      Timer(
+          Duration(seconds: 2),
+              () => Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => InitialScreen())));
+    }
+
+
   }
 }

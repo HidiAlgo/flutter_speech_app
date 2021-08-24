@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_app/Const/Constants.dart';
+import 'package:speech_app/screens/main_screen.dart';
 class InitialScreen extends StatefulWidget {
 
 
   @override
   _InitialScreenState createState() => _InitialScreenState();
 }
+const MaterialColor datePickerTheme = MaterialColor(0xffffff,<int,Color>{
+  50:Color(0xFFFF5C8A),
+  100:Color(0xFFFF5C8A),
+  200:Color(0xFFFF5C8A),
+  300:Color(0xFFFF5C8A),
+  400:Color(0xFFFF5C8A),
+  500:Color(0xFFFF5C8A),
+  600:Color(0xFFFF5C8A),
+  700:Color(0xFFFF5C8A),
+  800:Color(0xFFFF5C8A),
+  900:Color(0xFFFF5C8A),
+});
 
 class _InitialScreenState extends State<InitialScreen> {
   DateTime _date = DateTime.now();
@@ -17,12 +32,28 @@ class _InitialScreenState extends State<InitialScreen> {
   GlobalKey<FormState> _ageFormKey = GlobalKey<FormState>();
   GlobalKey<FormState> _pDateFormKey = GlobalKey<FormState>();
 
+  Future<SharedPreferences> _mSF = SharedPreferences.getInstance();
+
   Future<void> _selectDate(BuildContext context)async{
     DateTime _datePicker = await showDatePicker(
         context: context,
         initialDate: _date,
         firstDate: DateTime(_date.year-1),
-        lastDate: DateTime(_date.year+1));
+        lastDate: DateTime(_date.year+1),
+
+        builder: (BuildContext context,Widget child){
+            return Theme(
+              data: ThemeData(
+                primarySwatch: Colors.pink,
+
+
+              ),
+              child: child,
+            );
+        }
+    );
+
+
 
     if(_datePicker != null && _datePicker != _date){
       setState(() {
@@ -187,12 +218,22 @@ class _InitialScreenState extends State<InitialScreen> {
                     child: Icon(Icons.arrow_forward_ios,color: Color(0xFFFF5C8A),),
                   ),
                   onTap: (){
-                    //todo validation data
-                    //todo storing data in shared preferences
-                    //todo moving to main
 
+
+
+                    //todo validation data
                     if(_isValidate()){
-                      print("ok");
+                      var nickname = _nickNameController.text;
+                      var age = _ageController.text;
+                      var pDate = _dateController.text;
+
+                      //todo storing data in shared preferences
+                      setDataToSP(nickname, age, pDate);
+
+                      //todo moving to main
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) => MainScreen()));
+
                     }
 
                   },
@@ -217,5 +258,16 @@ class _InitialScreenState extends State<InitialScreen> {
       return true;
     }
   }
+
+  Future<Null> setDataToSP(String nickName,String age,String pDate)  async {
+    final SharedPreferences prefs = await _mSF;
+
+    prefs.setString(Constants.NICK_NAME, nickName);
+    prefs.setInt(Constants.AGE, int.parse(age));
+    prefs.setString(Constants.P_DATE, pDate);
+
+  }
+
+
 
 }
