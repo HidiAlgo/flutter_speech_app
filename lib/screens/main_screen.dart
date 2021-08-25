@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_app/Const/Constants.dart';
+import 'package:speech_app/api/network.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -25,7 +28,9 @@ class _MainScreenState extends State<MainScreen> {
   String lastError = '';
   String lastStatus = '';
   String _currentLocaleId = 'en_US';
+
   final SpeechToText speech = SpeechToText();
+  final FlutterTts flutterTts = FlutterTts();
 
   //INITIALIZE THE SPEECH INSTANCE
   Future<void> initSpeechState() async {
@@ -53,6 +58,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     //INITIALIZE THE SPEECH INSTANCE WHEN APPLICATION STARTED
     initSpeechState();
+
 
   }
   @override
@@ -132,8 +138,10 @@ class _MainScreenState extends State<MainScreen> {
                             }else{
                               //STOPPING BUTTON GLOWER AND LISTENER WHEN PRESSING AGAIN
                               setState(() {
+
                                 isListening = false;
                                 speech.stop();
+
                               });
                             }
                           },
@@ -243,7 +251,38 @@ class _MainScreenState extends State<MainScreen> {
 
   void postAPIRequest(){
     // todo CALL VOICE FLOW API
+    // SENDING RECOGNIZED TEXT AND RESPONSE CALL BACK FUNCTION TO THE NETWORK HELPER CLASS
+    NetworkHelper().getVoice(lastWords,getResponseDataFromApi);
     print(lastWords);
+  }
+
+  // AFTER THE CALLING API RESPONSE DATA COMES TO THIS METHOD FROM NETWORK HELPER CLASS, IF RESPONSE STATUS SUCCESS
+  void getResponseDataFromApi(String response){
+    //RESPONSE IS STRING, THAT CONVERTING TO JSON FORMAT
+    var jsonData = jsonDecode(response);
+
+    print(jsonData);
+    print(jsonData[0]['payload']['buttons'][0]['name']);
+
+    //TAKING VALUE FROM JSON TREE
+    //[{type: choice, payload: {buttons: [{name: Fine, request: {type: intent, payload: {query: Fine, intent: {name: I am good}, entities: []}}}, {name: Not good, request: {type: intent, payload: {query: Not good, intent: {name: I feel bad}, entities: []}}}]}}]
+    // PICK name: Fine
+    var responseData = jsonData[0]['payload']['buttons'][0]['name'];
+
+    // PICKED STRING SEND TO SPEECH
+    textToSpeech(responseData);
+
+    //TODO CREATE  IF ELSE LOGIC ACCORDING TO RESPONSE AND CALL THE textToSpeech FUNCTION WITH STRING VALUE
+
+  }
+
+  //SPEECHING PROVIDED TEXT
+  void textToSpeech(String text) async{
+    print("tts called");
+    await flutterTts.setLanguage('en-US');
+    await flutterTts.setSpeechRate(0.4);
+    await flutterTts.setPitch(0.8);  //0.5 to 1.5
+    await flutterTts.speak(text);
   }
 }
 
