@@ -8,6 +8,9 @@ import 'package:speech_app/api/network.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:audioplayer/audioplayer.dart';
+
+import 'dart:math';
 
 class MainScreen extends StatefulWidget {
 
@@ -24,10 +27,16 @@ class _MainScreenState extends State<MainScreen> {
   double level = 0.0;
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
-  String lastWords = 'Hello Emely \n How can i help You?';
+  String lastWords = 'Hello Emely \n How are you today?';
   String lastError = '';
   String lastStatus = '';
   String _currentLocaleId = 'en_US';
+
+  bool id = false;
+  var idNumber = "";
+
+  bool music = false;
+  AudioPlayer audioPlayer;
 
   final SpeechToText speech = SpeechToText();
   final FlutterTts flutterTts = FlutterTts();
@@ -199,7 +208,7 @@ class _MainScreenState extends State<MainScreen> {
   void _logEvent(String eventDescription) {
     if (_logEvents) {
       var eventTime = DateTime.now().toIso8601String();
-      print('$eventTime $eventDescription');
+      // print('$eventTime $eventDescription');
     }
   }
 
@@ -248,29 +257,70 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  // THIS FUNCTION CAN BE USED TO  PLAY A MUSIC
+  void playMusic(String url){
+    audioPlayer = AudioPlayer();
+    audioPlayer.play(url);
+    music = true;
+  }
+
+  // THIS FUNCTION IS USED TO STOP THE PLAYING MUSIC
+  void stopMusic(){
+    if(music == true){
+      audioPlayer.stop();
+      textToSpeech("I stopped the music for you");
+      music = false;
+    }else{
+      textToSpeech("Sorry there is no music");
+    }
+  }
 
   void postAPIRequest(){
     // todo CALL VOICE FLOW API
-    // SENDING RECOGNIZED TEXT AND RESPONSE CALL BACK FUNCTION TO THE NETWORK HELPER CLASS
-    NetworkHelper().getVoice(lastWords,getResponseDataFromApi);
-    print(lastWords);
+    // GENERATING A RANDOM INTEGER FOR THE USER ID ONLY AT THE START OF THE APP
+    if(id == false){
+      Random random = new Random();
+      var randomNumber1 = random.nextInt(900000) + 100000;
+      var randomNumber2 = random.nextInt(900000) + 100000;
+
+      idNumber = randomNumber1.toRadixString(16) + randomNumber2.toRadixString(16);
+      id = true;
+
+    }
+
+    // IF A BACKGROUND MUSIC IS PLAYING, USING THE COMMAND 'STOP THE MUSIC' WILL STOP IT.
+    if(lastWords == "stop the music"){
+      stopMusic();
+    }else{
+      NetworkHelper().getVoice(lastWords,getResponseDataFromApi, idNumber);
+    }
   }
+
 
   // AFTER THE CALLING API RESPONSE DATA COMES TO THIS METHOD FROM NETWORK HELPER CLASS, IF RESPONSE STATUS SUCCESS
   void getResponseDataFromApi(String response){
     //RESPONSE IS STRING, THAT CONVERTING TO JSON FORMAT
     var jsonData = jsonDecode(response);
 
+    //CREATING THE STRING FOR THE SPEAKING
+    var str = "";
     print(jsonData);
-    print(jsonData[0]['payload']['buttons'][0]['name']);
+    for( var i = 0 ; i < jsonData.length; i++ ) {
+      print(jsonData[i]);
+      if(jsonData[i]['type'] == 'speak'){
+        str += jsonData[i]['payload']['message']+". ";
+        if(jsonData[i]['payload']['type'] == 'audio'){
+          playMusic(jsonData[i]['payload']['src']);
+        }
 
-    //TAKING VALUE FROM JSON TREE
-    //[{type: choice, payload: {buttons: [{name: Fine, request: {type: intent, payload: {query: Fine, intent: {name: I am good}, entities: []}}}, {name: Not good, request: {type: intent, payload: {query: Not good, intent: {name: I feel bad}, entities: []}}}]}}]
-    // PICK name: Fine
-    var responseData = jsonData[0]['payload']['buttons'][0]['name'];
+      }
+    }
 
-    // PICKED STRING SEND TO SPEECH
-    textToSpeech(responseData);
+
+    textToSpeech(str);
+
+    str = "";
+
 
     //TODO CREATE  IF ELSE LOGIC ACCORDING TO RESPONSE AND CALL THE textToSpeech FUNCTION WITH STRING VALUE
 
