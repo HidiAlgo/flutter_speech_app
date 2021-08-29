@@ -212,7 +212,35 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 120,),
+                    SizedBox(height: 60,),
+                    Visibility(
+                      visible: music,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: Container(
+                        width: 250,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(Icons.fast_rewind,color: Colors.white,size: 42,),
+                            IconButton(
+                                icon: Icon(music ? Icons.pause_circle_outline_sharp :Icons.play_circle_outline,color: Colors.white,size: 42,),
+                                onPressed: (){
+                                  stopMusic();
+                                }),
+
+                            Icon(Icons.fast_forward,color: Colors.white,size: 42,)
+                          ],
+                        ) ,
+                      ),
+                    ),
+                    SizedBox(height: 16,),
                     Visibility(
                         child: MusicVisualizer(),
                         visible: isSpeeching,
@@ -311,7 +339,10 @@ class _MainScreenState extends State<MainScreen> {
     audioPlayer = AudioPlayer();
     audioPlayer.play(url);
     print(url);
-    music = true;
+    setState(() {
+      music = true;
+    });
+
 
   }
 
@@ -320,7 +351,10 @@ class _MainScreenState extends State<MainScreen> {
     if(music == true){
       audioPlayer.stop();
       textToSpeech("I stopped the music for you");
-      music = false;
+      setState(() {
+        music = false;
+      });
+
     }else{
       textToSpeech("Sorry there is no music");
     }
@@ -341,7 +375,7 @@ class _MainScreenState extends State<MainScreen> {
 
     // IF A BACKGROUND MUSIC IS PLAYING, USING THE COMMAND 'STOP THE MUSIC' WILL STOP IT.
     if(lastWords == "stop the music"){
-      stopMusic();
+      //stopMusic();
     }else{
       NetworkHelper().getVoice(lastWords,getResponseDataFromApi, idNumber);
     }
