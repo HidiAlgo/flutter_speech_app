@@ -3,7 +3,10 @@ import 'dart:math';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_app/Const/Constants.dart';
+import 'package:speech_app/Const/musicVisualizer.dart';
 import 'package:speech_app/api/network.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -22,15 +25,20 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
 
   bool isListening = false;
+  bool isSpeeching = false;
   bool _hasSpeech = false;
   bool _logEvents = false;
   double level = 0.0;
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
-  String lastWords = 'Hello Emely \n How are you today?';
+  String lastWords = '';
   String lastError = '';
   String lastStatus = '';
   String _currentLocaleId = 'en_US';
+  String nickName = '';
+  int age = 0;
+  String pregnantDate = '';
+
 
   bool id = false;
   var idNumber = "";
@@ -40,6 +48,35 @@ class _MainScreenState extends State<MainScreen> {
 
   final SpeechToText speech = SpeechToText();
   final FlutterTts flutterTts = FlutterTts();
+  DateTime _date = DateTime.now();
+
+  Future<SharedPreferences> _mSF = SharedPreferences.getInstance();
+
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _nickNameController = TextEditingController();
+  TextEditingController _ageController = TextEditingController();
+
+
+
+  void getDataFromSF() async {
+    final SharedPreferences prefs = await _mSF;
+    nickName = prefs.getString(Constants.NICK_NAME);
+    age = prefs.getInt(Constants.AGE);
+    pregnantDate = prefs.getString(Constants.P_DATE);
+    lastWords = 'Hello $nickName \n How are you today?';
+
+
+  }
+
+  Future<Null> setDataToSP(String nickName,String age,String pDate)  async {
+    final SharedPreferences prefs = await _mSF;
+
+    prefs.setString(Constants.NICK_NAME, nickName);
+    prefs.setInt(Constants.AGE, int.parse(age));
+    prefs.setString(Constants.P_DATE, pDate);
+
+  }
+
 
   //INITIALIZE THE SPEECH INSTANCE
   Future<void> initSpeechState() async {
@@ -67,6 +104,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     //INITIALIZE THE SPEECH INSTANCE WHEN APPLICATION STARTED
     initSpeechState();
+    getDataFromSF();
 
 
   }
@@ -101,9 +139,12 @@ class _MainScreenState extends State<MainScreen> {
                           padding: const EdgeInsets.all(16.0),
                           child: InkWell(
                             onTap: (){
-                              //todo go to the setting
+                              _showEditProfileDialog();
                             },
-                            child: Image.asset("assets/setting_icon.png",height: 36,),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Image.asset("assets/setting_icon.png",width: 30,height: 30,)
+                            ),
                           ),
                         )
 
@@ -158,7 +199,7 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 100,),
+                    SizedBox(height: 40,),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       //HERE SHOW THE RECOGNIZED TEXT FROM LISTENER
@@ -171,7 +212,15 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ),
                     ),
-
+                    SizedBox(height: 120,),
+                    Visibility(
+                        child: MusicVisualizer(),
+                        visible: isSpeeching,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                    )
+                    ,
 
                   ],
                 ),
@@ -261,7 +310,9 @@ class _MainScreenState extends State<MainScreen> {
   void playMusic(String url){
     audioPlayer = AudioPlayer();
     audioPlayer.play(url);
+    print(url);
     music = true;
+
   }
 
   // THIS FUNCTION IS USED TO STOP THE PLAYING MUSIC
@@ -322,17 +373,139 @@ class _MainScreenState extends State<MainScreen> {
     str = "";
 
 
-    //TODO CREATE  IF ELSE LOGIC ACCORDING TO RESPONSE AND CALL THE textToSpeech FUNCTION WITH STRING VALUE
 
+
+  }
+
+
+  //SHOWING THE EDIT PROFILE CUSTOM DIALOG
+  void _showEditProfileDialog(){
+    _nickNameController.text = nickName;
+    _ageController.text = age.toString();
+    _dateController.text = pregnantDate;
+
+    showDialog(context: context, builder: (BuildContext context){
+      return AlertDialog(
+
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0)
+        ),
+        title: Center(child: Text("Edit Profile",style: TextStyle(color: Color(0xFFFF5C8A)),)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nickNameController,
+              decoration: InputDecoration(
+                labelText: "NickName",
+
+              ),
+            ),
+
+            TextField(
+              controller: _ageController,
+              decoration: InputDecoration(
+                labelText: "Age",
+
+              ),
+            ),
+
+            TextField(
+              controller: _dateController,
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: "Date",
+
+              ),
+              onTap: (){
+                setState(() {
+                  _selectDate(context);
+                });
+              },
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: ElevatedButton(onPressed: (){
+                      setState(() {
+                        setDataToSP(_nickNameController.text,_ageController.text,_dateController.text);
+                      });
+
+                      Navigator.of(context).pop();
+
+                    }, child: Text("Save"),),
+                  ),
+                  ElevatedButton(onPressed: (){
+                    Navigator.of(context).pop();
+                  }, child: Text("Cancel")),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    });
+  }
+
+  Future<void> _selectDate(BuildContext context)async{
+    DateTime _datePicker = await showDatePicker(
+        context: context,
+        initialDate: _date,
+        firstDate: DateTime(_date.year-1),
+        lastDate: DateTime(_date.year+1),
+
+        builder: (BuildContext context,Widget child){
+          return Theme(
+            data: ThemeData(
+              primarySwatch: Colors.pink,
+
+
+            ),
+            child: child,
+          );
+        }
+    );
+
+
+
+    if(_datePicker != null && _datePicker != _date){
+      setState(() {
+        _date = _datePicker;
+        String formattedDate = DateFormat("yyyy-MM-dd").format(_datePicker);
+        _dateController.text = formattedDate;
+      });
+
+      print(_date.year);
+    }
   }
 
   //SPEECHING PROVIDED TEXT
   void textToSpeech(String text) async{
+    flutterTts.setStartHandler(() {
+      setState(() {
+
+        isSpeeching = true;
+
+      });
+    });
     print("tts called");
     await flutterTts.setLanguage('en-US');
     await flutterTts.setSpeechRate(0.4);
     await flutterTts.setPitch(0.8);  //0.5 to 1.5
     await flutterTts.speak(text);
+
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        print("Complete");
+        isSpeeching = false;
+
+      });
+    });
   }
 }
 
