@@ -13,7 +13,6 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:audioplayer/audioplayer.dart';
 
-import 'dart:math';
 
 class MainScreen extends StatefulWidget {
 
@@ -100,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    
     super.initState();
     //INITIALIZE THE SPEECH INSTANCE WHEN APPLICATION STARTED
     initSpeechState();
@@ -219,25 +218,17 @@ class _MainScreenState extends State<MainScreen> {
                       maintainAnimation: true,
                       maintainState: true,
                       child: Container(
-                        width: 250,
+                        width: 100,
                         height: 100,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(50),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(Icons.fast_rewind,color: Colors.white,size: 42,),
-                            IconButton(
-                                icon: Icon(music ? Icons.pause_circle_outline_sharp :Icons.play_circle_outline,color: Colors.white,size: 42,),
-                                onPressed: (){
-                                  stopMusic();
-                                }),
-
-                            Icon(Icons.fast_forward,color: Colors.white,size: 42,)
-                          ],
-                        ) ,
+                        child: IconButton(
+                            icon: Icon(music ? Icons.pause_circle_outline_sharp :Icons.play_circle_outline,color: Colors.white,size: 54,),
+                            onPressed: (){
+                              stopMusic();
+                            }) ,
                       ),
                     ),
                     SizedBox(height: 16,),
@@ -360,7 +351,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void postAPIRequest(){
-    // todo CALL VOICE FLOW API
+    
     // GENERATING A RANDOM INTEGER FOR THE USER ID ONLY AT THE START OF THE APP
     if(id == false){
       Random random = new Random();

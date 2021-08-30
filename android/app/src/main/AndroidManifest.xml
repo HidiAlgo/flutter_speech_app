@@ -10,7 +10,7 @@
         </intent>
     </queries>
    <application
-        android:label="speech_app"
+        android:label="Sefi"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
