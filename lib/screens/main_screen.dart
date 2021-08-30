@@ -247,8 +247,7 @@ class _MainScreenState extends State<MainScreen> {
                         maintainSize: true,
                         maintainAnimation: true,
                         maintainState: true,
-                    )
-                    ,
+                    ),
 
                   ],
                 ),
